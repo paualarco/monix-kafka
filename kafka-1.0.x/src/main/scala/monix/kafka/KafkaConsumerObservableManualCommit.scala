@@ -25,8 +25,8 @@ import monix.reactive.observers.Subscriber
 import org.apache.kafka.clients.consumer.{KafkaConsumer, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
 import scala.concurrent.{blocking, Future}
+import scala.collection.compat
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
@@ -47,13 +47,20 @@ final class KafkaConsumerObservableManualCommit[K, V] private[kafka] (
       Task(blocking(consumer.synchronized(consumer.commitSync(batch.map {
         case (k, v) => k -> new OffsetAndMetadata(v)
       }.asJava))))
+
     override def commitBatchAsync(batch: Map[TopicPartition, Long], callback: OffsetCommitCallback): Task[Unit] =
       Task {
-        blocking(consumer.synchronized(consumer.commitAsync(batch.map {
-          case (k, v) => k -> new OffsetAndMetadata(v)
-        }.asJava, callback)))
+        blocking {
+          consumer.synchronized {
+            consumer.commitAsync(batch.map {
+              case (k, v) => k -> new OffsetAndMetadata(v)
+            }, callback)
+          }
+        }
       }
   }
+
+
 
   override protected def ackTask(consumer: KafkaConsumer[K, V], out: Subscriber[CommittableMessage[K, V]]): Task[Ack] =
     Task.create { (scheduler, cb) =>

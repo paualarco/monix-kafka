@@ -31,7 +31,7 @@ lazy val warnUnusedImport = Seq(
 
 lazy val sharedSettings = warnUnusedImport ++ Seq(
   organization := "io.monix",
-  scalaVersion := "2.12.10",
+  scalaVersion := "2.13.1",
   crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.0"),
 
   scalacOptions ++= Seq(
@@ -91,7 +91,7 @@ lazy val sharedSettings = warnUnusedImport ++ Seq(
   scalacOptions ++= Seq(
     // Turns all warnings into errors ;-)
     // TODO: enable after fixing deprecations for Scala 2.13
-//    "-Xfatal-warnings",
+    //"-Xfatal-warnings",
     // Enables linter options
     "-Xlint:adapted-args", // warn if an argument list is modified to match the receiver
     "-Xlint:nullary-unit", // warn when nullary methods return Unit
@@ -200,11 +200,11 @@ lazy val commonDependencies = Seq(
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
     "com.typesafe" % "config" % "1.4.0",
     "org.slf4j" % "log4j-over-slf4j" % "1.7.30",
+    "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
     // For testing ...
     "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.14.3" % "test"
-  )
+    "org.scalacheck" %% "scalacheck" % "1.14.3" % "test")
 )
 
 lazy val monixKafka = project.in(file("."))
@@ -261,6 +261,17 @@ lazy val kafka9 = project.in(file("kafka-0.9.x"))
       "org.apache.kafka" %  "kafka-clients" % "0.9.0.1" exclude("org.slf4j","slf4j-log4j12") exclude("log4j", "log4j")
     )
   )
+
+lazy val benchmarks = project.in(file("benchmarks"))
+  .settings(sharedSettings)
+  .settings(commonDependencies)
+  .settings(
+    name := "benchmarks",
+    organization := "io.monix",
+    scalaVersion := "2.13.1"
+    )
+    .aggregate(kafka1x)
+    .dependsOn(kafka1x)
 
 //------------- For Release
 

@@ -101,7 +101,9 @@ object CommittableOffsetBatch {
     if (committableOffsets.nonEmpty) {
       committableOffsets
         .groupBy(_.commitCallback)
+        .view
         .mapValues(CommittableOffsetBatch(_))
+        .toMap
         .values
         .toList
     } else {
